@@ -5,3 +5,9 @@ void minisystem()
 {
     printf("minisystem\n");
 }
+
+void login()
+{
+    printf("User ID : 0\n");
+    printf("User : ROOT user\n");
+}
