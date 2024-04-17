@@ -5,6 +5,7 @@
 #include <readline/history.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "system.h"
 #include "share_mem.h"
@@ -12,7 +13,6 @@
 #define BUFFER_SIZE 25
 #define READ_END 0
 #define WRITE_END 1
-
 
 void print_minios(char* str);
 
@@ -52,6 +52,13 @@ int main() {
 	            return 1;
 	    }
 	}
+	else if (strcmp(input, "os_week7") == 0) {
+	    if(os_week7_hw() == 1)
+	    {
+		    fprintf(stderr, "Launch os_week7_hw Failed");
+		    return 1;
+	    }
+	}
         else 
 	{
 		printf("%s\n", input);
@@ -59,10 +66,6 @@ int main() {
 	}
 	free(input);
     }
- 
-
-    // 메모리 해제
-    free(input);
     
     print_minios("[MiniOS SSU] MiniOS Shutdown........");
 

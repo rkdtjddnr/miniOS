@@ -5,13 +5,28 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <pthread.h>
+#include <time.h>
+#include <math.h>
 
 #include "system.h"
 #include "share_mem.h"
 
+
+/* os_week_6 */
 #define BUFFER_SIZE 25
 #define WRITE_END 1
 #define READ_END 0
+
+/* os_week_7 */
+#define NUM_THREAD 50
+#define TOTAL_POINTS 1000000
+
+int circle_points = 0;
+int per_th_work = TOTAL_POINTS / NUM_THREAD;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+/*=================================================*/
+
 
 void minisystem()
 {
@@ -101,4 +116,54 @@ int os_week6_hw()
 	    close(fd[READ_END]);
 	    kill(getpid(), SIGKILL);
     }
+}
+
+/*=============os_week_7=============*/
+int check_in_circle(const double* x, const double* y)
+{
+	double dis = sqrt(pow(*x, 2) + pow(*y, 2));
+	if (dis > 1.0) return 0;
+	else return 1;
+}
+
+void* task()
+{
+	double x, y;
+	int is_in_circle;
+	unsigned int seed = time(NULL) + pthread_self();
+	for (int i = 0; i < per_th_work; i++)
+	{
+		x = ((double)rand_r(&seed) / RAND_MAX) * 2.0 - 1.0;
+		y = ((double)rand_r(&seed) / RAND_MAX) * 2.0 - 1.0;
+
+		is_in_circle = check_in_circle(&x, &y);
+		pthread_mutex_lock(&mutex);
+		circle_points += is_in_circle;
+		pthread_mutex_unlock(&mutex);
+	}
+}
+
+int os_week7_hw()
+{
+	circle_points = 0;
+	double estimated_pi;
+	pthread_t thread[NUM_THREAD];
+	for (int i = 0; i < NUM_THREAD; i++)
+	{
+		if (pthread_create(&thread[i], NULL, task, NULL) != 0)
+		{
+			fprintf(stderr, "thread create failed");
+			return 1;
+		}
+	}
+
+	for (int i = 0; i < NUM_THREAD; i++)
+		pthread_join(thread[i], NULL);
+
+	printf("Number of thread : %d\n", NUM_THREAD);
+	printf("Points in circle : %d, Total points : %d\n", circle_points, TOTAL_POINTS);
+
+	estimated_pi = 4 * ((double)circle_points / (double)TOTAL_POINTS);
+
+	printf("Estimated pi = %.4lf\n", estimated_pi);
 }
